@@ -91,7 +91,7 @@ public class OrderController {
      * 支付宝服务器回调商家服务器接口
      * @return
      */
-    @RequestMapping("callback.do")
+    @RequestMapping("/callback.do")
     public String alipay_callback(HttpServletRequest request){
 
         Map<String, String[]> callbackParameter = request.getParameterMap();

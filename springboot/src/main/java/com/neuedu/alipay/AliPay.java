@@ -132,7 +132,7 @@ public class AliPay {
                 .setUndiscountableAmount(undiscountableAmount).setSellerId(sellerId).setBody(body)
                 .setOperatorId(operatorId).setStoreId(storeId).setExtendParams(extendParams)
                 .setTimeoutExpress(timeoutExpress)
-                .setNotifyUrl("http://7prtkf.natappfree.cc/order/callback.do")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
+                .setNotifyUrl("http://y6ybpn.natappfree.cc/order/callback.do")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
                 .setGoodsDetailList(goodsDetailList);
 
         AlipayF2FPrecreateResult result = tradeService.tradePrecreate(builder);
