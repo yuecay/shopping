@@ -120,4 +120,61 @@
     </set>
     <where>id = #{productId,jdbcType=INTEGER}</where>
   </update>
+
+  <select id="findHotProduct" resultMap="BaseResultMap">
+    select id, category_id, name, subtitle, main_image, price, stock, status,is_new,is_hot,is_banner, create_time,
+    update_time, sub_images, detail
+    from neuedu_product where is_hot = 1
+  </select>
+
+  <select id="findNewProduct" resultMap="BaseResultMap">
+     select id, category_id, name, subtitle, main_image, price, stock, status,is_new,is_hot,is_banner, create_time,
+    update_time, sub_images, detail
+    from neuedu_product where is_new = 1
+  </select>
+
+  <select id="findProductListByCategory" resultMap="BaseResultMap">
+     select id, category_id, name, subtitle, main_image, price, stock, status,is_new,is_hot,is_banner, create_time,
+    update_time, sub_images, detail
+    from neuedu_product where category_id = #{categoryId}
+  </select>
+  <select id="findCountBycategory" resultType="int">
+     select count(id)
+    from neuedu_product where category_id = #{categoryId}
+  </select>
+
+  <select id="findProductCount" resultType="int">
+     select count(id)
+    from neuedu_product where is_new =1
+  </select>
+
+  <select id="getCountByProductName" parameterType="map" resultType="int">
+    select count(id)
+    from neuedu_product
+    <where>
+      <if test="productId!=null">id = #{productId} </if>
+      <if test="productName!=null">name like #{productName}</if>
+    </where>
+  </select>
+
+  <select id="getCountByProductNameAndStatus" parameterType="map" resultType="int">
+    select count(id)
+    from neuedu_product
+    <where>
+      <if test="productId!=null">id = #{productId} and status = 2 </if>
+      <if test="productName!=null">name like #{productName} and status = 2</if>
+      <if test="productId==null and productName==null">status = 2</if>
+    </where>
+  </select>
+
+  <select id="findProductByNameAndIdAndStatus" parameterType="map" resultMap="BaseResultMap">
+    select id, category_id, name, subtitle, main_image, price, stock, status, create_time,
+    update_time, sub_images, detail
+    from neuedu_product
+    <where>
+      <if test="productId!=null">id = #{productId} and status = 2 </if>
+      <if test="productName!=null">name like #{productName} and status = 2</if>
+      <if test="productId==null and productName==null">status = 2</if>
+    </where>
+  </select>
 </mapper>

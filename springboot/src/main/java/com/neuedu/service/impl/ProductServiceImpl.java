@@ -82,25 +82,27 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public ServerResponse search(String productName, Integer productId, Integer pageNum, Integer pageSize) {
 
-        if(productName!=null){
+        if(productName!=null ){
             productName = "%"+productName+"%";
+
         }
+        int count = productMapper.getCountByProductName(productId, productName);
         //分页一定要在执行查询之前调用
         Page page = PageHelper.startPage(pageNum, pageSize);
         List<Product> productList = productMapper.findProductByNameAndId(productId, productName);
-        List<ProductListVO> productListVOS = Lists.newArrayList();
+        List<ProductDetailVO> productDetailVOS = Lists.newArrayList();
         //productList转ProductListVOS，规定前台显示的东西
         if(productList != null && productList.size() > 0){
             for (Product product:productList){
-                ProductListVO productListVO = assembleProductListVO(product);
-                productListVOS.add(productListVO);
+                ProductDetailVO productDetailVO = assembleProductDetailVO(product);
+                productDetailVOS.add(productDetailVO);
             }
         }
 
-        PageInfo pageInfo = new PageInfo(productListVOS);
+        PageInfo pageInfo = new PageInfo(productDetailVOS);
 
 
-        return ServerResponse.serverResponseBySuccess(pageInfo);
+        return ServerResponse.serverResponseBySuccess(pageInfo,count);
     }
 
     @Override
@@ -168,6 +170,79 @@ public class ProductServiceImpl implements IProductService {
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"扣库存失败");
         }
         return ServerResponse.serverResponseBySuccess();
+    }
+
+    @Override
+    public ServerResponse<List<ProductDetailVO>> hotProductList() {
+        List<ProductDetailVO> productDetailVOList = Lists.newArrayList();
+        List<Product> hotProductList = productMapper.findHotProduct();
+        if(hotProductList == null || hotProductList.size() <= 0){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"没有热门产品");
+        }
+        for (Product product : hotProductList) {
+            ProductDetailVO productDetailVO = assembleProductDetailVO(product);
+            productDetailVOList.add(productDetailVO);
+        }
+        return ServerResponse.serverResponseBySuccess(productDetailVOList);
+    }
+
+    @Override
+    public ServerResponse<List<ProductDetailVO>> newProductList(Integer pageNum, Integer pageSize) {
+        int count = productMapper.findProductCount();
+        Page page = PageHelper.startPage(pageNum, pageSize);
+        List<Product> newProductList = productMapper.findNewProduct();
+        List<ProductDetailVO> productDetailVOList = Lists.newArrayList();
+
+        if(newProductList == null || newProductList.size() <= 0){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"没有新产品");
+        }
+        for (Product product : newProductList) {
+            ProductDetailVO productDetailVO = assembleProductDetailVO(product);
+            productDetailVOList.add(productDetailVO);
+        }
+        PageInfo pageInfo = new PageInfo(productDetailVOList);
+        return ServerResponse.serverResponseBySuccess(pageInfo,count);
+    }
+
+    @Override
+    public ServerResponse<List<ProductDetailVO>> findProductListByCategory(Integer categoryId,Integer pageNum, Integer pageSize) {
+        int count = productMapper.findCountBycategory(categoryId);
+        Page page = PageHelper.startPage(pageNum, pageSize);
+        List<Product> ProductList = productMapper.findProductListByCategory(categoryId);
+
+        List<ProductDetailVO> productDetailVOList = Lists.newArrayList();
+
+        if(ProductList == null || ProductList.size() <= 0){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"没有产品");
+        }
+        for (Product product : ProductList) {
+            ProductDetailVO productDetailVO = assembleProductDetailVO(product);
+            productDetailVOList.add(productDetailVO);
+        }
+        PageInfo pageInfo = new PageInfo(productDetailVOList);
+
+        return ServerResponse.serverResponseBySuccess(pageInfo,count);
+    }
+
+    @Override
+    public ServerResponse findProductDown(String productName, Integer productId, Integer pageNum, Integer pageSize) {
+        if(productName!=null ){
+            productName = "%"+productName+"%";
+        }
+        int count = productMapper.getCountByProductNameAndStatus(productId, productName);
+        //分页一定要在执行查询之前调用
+        Page page = PageHelper.startPage(pageNum, pageSize);
+        List<Product> productList = productMapper.findProductByNameAndIdAndStatus(productId, productName);
+        List<ProductDetailVO> productDetailVOS = Lists.newArrayList();
+        //productList转ProductListVOS，规定前台显示的东西
+        if(productList != null && productList.size() > 0){
+            for (Product product:productList){
+                ProductDetailVO productDetailVO = assembleProductDetailVO(product);
+                productDetailVOS.add(productDetailVO);
+            }
+        }
+        PageInfo pageInfo = new PageInfo(productDetailVOS);
+        return ServerResponse.serverResponseBySuccess(pageInfo,count);
     }
 
 

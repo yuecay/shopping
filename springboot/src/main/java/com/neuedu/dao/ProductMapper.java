@@ -58,4 +58,27 @@ public interface ProductMapper {
      * 扣库存
      */
     int reduceStock(@Param("productId") Integer productId, @Param("stock")Integer stock);
+    /**
+     * 返回热销产品
+     */
+    List<Product> findHotProduct();
+
+    /**
+     * 新品
+     * @return
+     */
+    List<Product> findNewProduct();
+
+    List<Product> findProductListByCategory(@Param("categoryId")Integer categoryId);
+    //通过类别查询返回总数
+    int findCountBycategory(@Param("categoryId")Integer categoryId);
+
+    int findProductCount();
+
+    int getCountByProductName(@Param("productId") Integer productId,
+                              @Param("productName") String productName);
+
+    int getCountByProductNameAndStatus(@Param("productId")Integer productId, @Param("productName")String productName);
+
+    List<Product> findProductByNameAndIdAndStatus(@Param("productId")Integer productId, @Param("productName")String productName);
 }

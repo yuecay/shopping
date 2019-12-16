@@ -8,14 +8,17 @@ import com.neuedu.pojo.User;
 import com.neuedu.service.ICategoryService;
 import com.neuedu.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 
+
 @RestController
 @RequestMapping(value = "/manage/category")
+
 public class CategoryController {
     @Autowired
     ICategoryService categoryService;
@@ -40,10 +43,17 @@ public class CategoryController {
 
         return categoryService.updateCategory(category);
     }
+
+    @RequestMapping("/deleteCategory/{categoryId}")
+    public ServerResponse deleteCategory(@PathVariable("categoryId") Integer categoryId){
+        return categoryService.deleteCategory(categoryId);
+    }
     /**
      * 查看平级类别
      */
+
     @RequestMapping("/{categoryId}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse getCategoryById(@PathVariable("categoryId") Integer categoryId,HttpSession session){
        /* User user = (User)session.getAttribute(Const.CURRENT_USER);
         if(user == null){
@@ -64,4 +74,7 @@ public class CategoryController {
 
         return categoryService.deepCategory(categoryId);
     }
+    /**
+     * 查看当前热门类别
+     */
 }

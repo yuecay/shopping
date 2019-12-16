@@ -81,7 +81,7 @@
     -->
     select id, user_id, order_no, shipping_id, payment, payment_type, postage, status, 
     payment_time, send_time, end_time, close_time, create_time, update_time
-    from neuedu_order
+    from neuedu_order order by id desc
   </select>
 
   <select id="findOrderByOrderNo" resultMap="BaseResultMap">
@@ -102,7 +102,6 @@
         <if test="order.sendTime !=null">send_time = now(),</if>
         <if test="order.endTime !=null">end_time = now(),</if>
         <if test="order.closeTime !=null">close_time = now(),</if>
-
       update_time = now()
     where order_no = #{order.orderNo}
   </update>
@@ -110,7 +109,30 @@
   <select id="findAllOrderByUserId" resultMap="BaseResultMap">
     select id, user_id, order_no, shipping_id, payment, payment_type, postage, status,
     payment_time, send_time, end_time, close_time, create_time, update_time
-    from neuedu_order where user_id=#{userId}
+    from neuedu_order where user_id=#{userId} order by id desc
   </select>
+
+  <select id="findOrderListByStatus" resultMap="BaseResultMap" parameterType="map">
+     select id, user_id, order_no, shipping_id, payment, payment_type, postage, status,
+    payment_time, send_time, end_time, close_time, create_time, update_time
+    from neuedu_order where user_id=#{userId} and status = #{status}
+  </select>
+
+  <select id="getAllOrderCount" resultType="int">
+     select count(id) from neuedu_order
+  </select>
+
+  <select id="getOrderCountBystatus" resultType="int">
+     select count(id) from neuedu_order where status = #{status}
+  </select>
+
+  <select id="findOrderBystatus" resultMap="BaseResultMap">
+
+    select id, user_id, order_no, shipping_id, payment, payment_type, postage, status,
+    payment_time, send_time, end_time, close_time, create_time, update_time
+    from neuedu_order where status =#{status} order by id desc
+  </select>
+
+
 
 </mapper>

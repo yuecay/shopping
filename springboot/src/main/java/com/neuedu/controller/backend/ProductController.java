@@ -8,10 +8,7 @@ import com.neuedu.pojo.User;
 import com.neuedu.service.IProductService;
 import com.neuedu.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
@@ -25,6 +22,7 @@ public class ProductController  {
      * 商品添加&更新
      */
     @RequestMapping("/save.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse addOrUpdate(Product product, HttpSession session){
 
 
@@ -46,11 +44,11 @@ public class ProductController  {
      */
 
     @RequestMapping(value = "search.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse search(@RequestParam(name = "productName",required = false) String productName,
                                  @RequestParam(name = "productId",required = false) Integer productId,
                                  @RequestParam(name = "pageNum",required = false,defaultValue = "1") Integer pageNum,
                                  @RequestParam(name = "pageSize",required = false,defaultValue = "10") Integer pageSize){
-
         return productService.search(productName, productId, pageNum, pageSize);
     }
 
@@ -58,4 +56,15 @@ public class ProductController  {
     public ServerResponse detail(@PathVariable("productId") Integer productId){
         return productService.detail(productId);
     }
+
+    //查询所有下架商品
+    @RequestMapping(value = "findProductDown.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
+    public ServerResponse findProductDown(@RequestParam(name = "productName",required = false) String productName,
+                                          @RequestParam(name = "productId",required = false) Integer productId,
+                                          @RequestParam(name = "pageNum",required = false,defaultValue = "1") Integer pageNum,
+                                          @RequestParam(name = "pageSize",required = false,defaultValue = "10") Integer pageSize){
+        return productService.findProductDown(productName, productId, pageNum, pageSize);
+    }
+
 }

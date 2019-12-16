@@ -30,4 +30,6 @@ public interface ICategoryService {
      * 根据id查看类别
      */
     ServerResponse<Category> selectCategory(Integer categoryId);
+
+    ServerResponse deleteCategory(Integer categoryId);
 }

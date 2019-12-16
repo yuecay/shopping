@@ -1,11 +1,14 @@
 package com.neuedu.service.impl;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.neuedu.common.ResponseCode;
 import com.neuedu.common.ServerResponse;
 import com.neuedu.dao.CategoryMapper;
 import com.neuedu.pojo.Category;
 import com.neuedu.service.ICategoryService;
+import com.neuedu.utils.DateUtils;
+import com.neuedu.vo.CategoryVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,8 +54,13 @@ public class CategotyServiceImpl implements ICategoryService {
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"类别id必须要传");
         }
         List<Category> categoryList = categoryMapper.selectCategoryById(categoryId);
+        List<CategoryVO> categoryVOList = Lists.newArrayList();
+        for (Category category : categoryList) {
+            CategoryVO categoryVO = assembleCategoryVO(category);
+            categoryVOList.add(categoryVO);
+        }
 
-        return ServerResponse.serverResponseBySuccess(categoryList,"成功");
+        return ServerResponse.serverResponseBySuccess(categoryVOList,"成功");
     }
 
     @Override
@@ -81,6 +89,18 @@ public class CategotyServiceImpl implements ICategoryService {
         return ServerResponse.serverResponseBySuccess(category);
     }
 
+    @Override
+    public ServerResponse deleteCategory(Integer categoryId) {
+        if(categoryId == null){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"类别id必须要传");
+        }
+        int result = categoryMapper.deleteByPrimaryKey(categoryId);
+        if(result <= 0){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"删除失败！");
+        }
+        return ServerResponse.serverResponseBySuccess();
+    }
+
     public Set<Category> findAllChildCategory(Set<Category> categorySet,Integer categoryId){
         //查看categoryId的类别信息
         Category category = categoryMapper.selectByPrimaryKey(categoryId);
@@ -95,5 +115,19 @@ public class CategotyServiceImpl implements ICategoryService {
             }
         }
         return categorySet;
+    }
+
+
+    public CategoryVO assembleCategoryVO( Category category){
+        CategoryVO categoryVO = new CategoryVO();
+        categoryVO.setId(category.getId());
+        categoryVO.setMainImage(category.getMainImage());
+        categoryVO.setName(category.getName());
+        categoryVO.setParentId(category.getParentId());
+        categoryVO.setSortOrder(category.getSortOrder());
+        categoryVO.setStatus(category.getStatus());
+        categoryVO.setCreateTime(DateUtils.dateToStr(category.getCreateTime()));
+        categoryVO.setUpdateTime(DateUtils.dateToStr(category.getUpdateTime()));
+        return categoryVO;
     }
 }

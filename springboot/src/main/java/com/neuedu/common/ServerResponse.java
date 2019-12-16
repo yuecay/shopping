@@ -12,7 +12,7 @@ public class ServerResponse<T> {
     private int status;//返回到前端的状态码
     private T data;//返回给前端的数据
     private String msg;//当status=0时，封装了错误信息
-
+    private int count;//分页时回调总数
     private ServerResponse() {
     }
 
@@ -36,6 +36,18 @@ public class ServerResponse<T> {
         this.msg = msg;
     }
 
+    public ServerResponse(int status, T data, String msg, int count) {
+        this.status = status;
+        this.data = data;
+        this.msg = msg;
+        this.count = count;
+    }
+
+    public ServerResponse(int status, T data, int count) {
+        this.status = status;
+        this.data = data;
+        this.count = count;
+    }
 
     /**
      * 调用接口成功时回调
@@ -46,8 +58,14 @@ public class ServerResponse<T> {
     public static <T> ServerResponse serverResponseBySuccess(T data){
         return new ServerResponse(ResponseCode.SUCCESS,data);
     }
+    public static <T> ServerResponse serverResponseBySuccess(T data,int count){
+        return new ServerResponse(ResponseCode.SUCCESS,data,count);
+    }
     public static <T> ServerResponse serverResponseBySuccess(T data,String msg){
         return new ServerResponse(ResponseCode.SUCCESS,data,msg);
+    }
+    public static <T> ServerResponse serverResponseBySuccess(T data,String msg,int count){
+        return new ServerResponse(ResponseCode.SUCCESS,data,msg,count);
     }
     public static <T> ServerResponse serverResponseBySuccess(String msg){
         return new ServerResponse(ResponseCode.SUCCESS,msg);
@@ -100,5 +118,13 @@ public class ServerResponse<T> {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 }

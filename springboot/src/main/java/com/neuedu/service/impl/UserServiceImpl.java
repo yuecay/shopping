@@ -7,6 +7,7 @@ import com.neuedu.dao.UserMapper;
 import com.neuedu.pojo.User;
 import com.neuedu.service.IUserService;
 import com.neuedu.utils.MD5Utils;
+import com.neuedu.utils.RedisApi;
 import com.neuedu.utils.TokenCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,17 +18,22 @@ import java.util.UUID;
 public class UserServiceImpl implements IUserService {
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private RedisApi redisApi;
     @Override
     public ServerResponse register(User user) {
         //1.参数校验
-        if(user == null){
+        if(user.getUsername() == "" || user.getPassword() == "" || user.getEmail() == "" ||
+        user.getPhone() == "" || user.getQuestion() == "" || user.getAnswer() == ""){
             return ServerResponse.serverResponseByError(ResponseCode.PARAM_NOT_NULL,"参数不能为空");
         }
+
         //2.判断用户是否存在
         int result = userMapper.isExistsUsername(user.getUsername());
         if(result>0){
             return ServerResponse.serverResponseByError(ResponseCode.USERNAME_EXISTS,"用户名已存在");
         }
+
         //3.判断邮箱是否存在
         int resultEmail = userMapper.isExistsEmail(user.getEmail());
         if(resultEmail>0){
@@ -100,9 +106,10 @@ public class UserServiceImpl implements IUserService {
         if(result<=0){
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"答案错误");
         }
-        //生成token
+        //生成token,token的过期时间是12小时
         String token = UUID.randomUUID().toString();
-        TokenCache.set("username:"+username, token );
+        //TokenCache.set("username:"+username, token );
+        redisApi.setex("username:"+username,token,12*3600);
         return ServerResponse.serverResponseBySuccess(token);
     }
 
@@ -118,7 +125,8 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"token不能为空");
         }
         //通过token判断是否修改的是自己的账号
-        String token = TokenCache.get("username:" + username);
+       // String token = TokenCache.get("username:" + username);
+        String token = redisApi.get("username:" + username);
         if(token==null){
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"不能修改别人的密码或者token已经过期");
         }

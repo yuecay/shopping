@@ -45,4 +45,11 @@ public interface IOrderService {
     ServerResponse<List<OrderVO>> selectOrderVOList(Integer pageNum, Integer pageSize);
 
     ServerResponse send_goods(Long orderNo);
+
+
+    public ServerResponse findOrderListByStatus(Integer status);
+
+    ServerResponse updateOrderStatusByOrderNo(Long orderNo);
+
+
 }

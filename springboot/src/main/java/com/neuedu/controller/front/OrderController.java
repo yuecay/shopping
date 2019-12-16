@@ -5,17 +5,14 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.demo.trade.config.Configs;
 import com.google.common.collect.Maps;
-import com.neuedu.common.ResponseCode;
-import com.neuedu.common.ServerResponse;
+import com.neuedu.common.*;
 import com.neuedu.dao.OrderMapper;
+import com.neuedu.pojo.Order;
 import com.neuedu.pojo.User;
 import com.neuedu.service.IOrderService;
 import com.neuedu.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -25,13 +22,16 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "/order")
 public class OrderController {
-
+    @Autowired
+    private WebSocket webSocket;
     @Autowired
     IOrderService orderService;
+
     /**
      * 创建订单接口
      */
     @RequestMapping("{shippingId}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse creatOrder(@PathVariable("shippingId") Integer shippingId, HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if(user == null){
@@ -44,6 +44,7 @@ public class OrderController {
      * 用户获取订单的商品信息列表
      */
     @RequestMapping("/list.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse list(HttpSession session,
                                @RequestParam(name = "pageNum",required = false,defaultValue = "1") Integer pageNum,
                                @RequestParam(name = "pageSize",required = false,defaultValue = "10") Integer pageSize){
@@ -54,12 +55,14 @@ public class OrderController {
 
         return orderService.list(user.getId(),pageNum,pageSize);
     }
+
     /**
      * 获取订单的商品信息
      */
     @RequestMapping("get_order_cart_product/{orderNo}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse get_order_cart_product(@PathVariable("orderNo") Long orderNo){
-        return orderService.get_order_cart_product(orderNo);
+        return orderService.detail(orderNo);
     }
     /**
      * 订单详情detail
@@ -72,6 +75,7 @@ public class OrderController {
      * 取消订单
      */
     @RequestMapping("/cancel/{orderNo}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse cancel(@PathVariable("orderNo") Long orderNo){
         return orderService.cancel(orderNo);
     }
@@ -79,6 +83,7 @@ public class OrderController {
      * （支付宝）支付接口
      */
     @RequestMapping("/pay/{orderNo}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse pay(@PathVariable("orderNo") Long orderNo,HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if(user == null){
@@ -92,7 +97,7 @@ public class OrderController {
      * @return
      */
     @RequestMapping("/callback.do")
-    public String alipay_callback(HttpServletRequest request){
+    public String alipay_callback(HttpServletRequest request,HttpSession session){
 
         Map<String, String[]> callbackParameter = request.getParameterMap();
         Map<String,String> signParams = Maps.newHashMap();
@@ -121,7 +126,7 @@ public class OrderController {
             if(result){
                 //验证通过
                 System.out.println("支付宝验证签名通过");
-               return orderService.callback(signParams);
+                return orderService.callback(signParams);
             }else {
                 return "fail";
             }
@@ -136,8 +141,34 @@ public class OrderController {
      * 根据订单号查询订单支付状态
      */
     @RequestMapping("/query_order_pay_status/{orderNo}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse query_order_pay_status(@PathVariable("orderNo") Long orderNo){
         return orderService.query_order_pay_status(orderNo);
     }
 
+    /**
+     * 根据订单号修改订单状态
+     */
+    @RequestMapping("/updateOrderStatusByOrderNo/{orderNo}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
+    public ServerResponse updateOrderStatusByOrderNo(@PathVariable("orderNo") Long orderNo,
+                                                     HttpSession session){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ServerResponse.serverResponseByError(ResponseCode.NOT_LOGIN,"未登录！");
+        }
+        return orderService.updateOrderStatusByOrderNo(orderNo);
+    }
+
+    @RequestMapping("/remindSend/{orderNo}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
+    public void remindSend(@PathVariable("orderNo") String orderNo,HttpSession session){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if(user == null){
+            return ;
+        }
+        String text= "请将订单号为： "+orderNo+" 的订单发货！";
+        webSocket.sendOneMessage("2",text);//2表示李四的id
+        System.out.println("执行成功!!!!!!!!");
+    }
 }

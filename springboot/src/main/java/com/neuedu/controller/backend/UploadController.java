@@ -3,30 +3,33 @@ package com.neuedu.controller.backend;
 import com.neuedu.common.ResponseCode;
 import com.neuedu.common.ServerResponse;
 import com.neuedu.vo.ImageVO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
 
 @Controller
-@RequestMapping("/manage")
+@CrossOrigin
 public class UploadController {
     //获取yml文件中的地址配置信息
     @Value("${springboot.imageHost}")
     private String imageHost;
-    @GetMapping("/upload")
+/*    @GetMapping("/upload")
     public String upload(){
         return "upload";
-    }
+    }*/
 
-    @PostMapping("/upload")
+    @PostMapping(value = "/upload")
     @ResponseBody
-    public ServerResponse upload(@RequestParam("uploadfile") MultipartFile uploadfile){
+    public ServerResponse upload(@Param("uploadfile") MultipartFile uploadfile, HttpServletResponse response){
+
         if(uploadfile == null || uploadfile.getOriginalFilename().equals("")){
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"图片必须上传！");
         }
@@ -45,7 +48,7 @@ public class UploadController {
 
         try {
             uploadfile.transferTo(newFile);
-            ImageVO imageVO = new ImageVO(newFileName,imageHost+newFileName);
+            ImageVO imageVO = new ImageVO(newFileName,imageHost+"/"+newFileName);
             return ServerResponse.serverResponseBySuccess(imageVO);
         } catch (IOException e) {
             e.printStackTrace();

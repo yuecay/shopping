@@ -60,4 +60,13 @@ public interface OrderMapper {
      */
     List<Order> findAllOrderByUserId(@Param("userId") Integer userId);
 
+    List<Order> findOrderListByStatus(@Param("userId")Integer userId,@Param("status") Integer status);
+
+    int getAllOrderCount();
+
+    int getOrderCountBystatus(@Param("status")Integer status);
+
+    List<Order> findOrderBystatus(@Param("status")Integer status);
+
+
 }

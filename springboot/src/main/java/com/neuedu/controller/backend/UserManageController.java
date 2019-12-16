@@ -5,6 +5,7 @@ import com.neuedu.common.ServerResponse;
 import com.neuedu.service.IUserService;
 import com.neuedu.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,9 +21,10 @@ public class UserManageController {
     /**
      * 登录接口
      */
-    @RequestMapping(value = "/login/{username}/{password}")
-    public ServerResponse login(@PathVariable("username") String username,
-                                @PathVariable("password")String password,
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
+    @RequestMapping(value = "/login.do")
+    public ServerResponse login(String username,
+                                String password,
                                 HttpSession session){
         ServerResponse serverResponse = userService.login(username, password, RoleEnum.ROLE_ADMIN.getRole());
         //判断是否登录成功

@@ -5,4 +5,4 @@ spring:
 
 springboot:
   #imageHost: http://localhost/
-  imageHost: img.yuecay.com
+  imageHost: http://img.yuecay.com

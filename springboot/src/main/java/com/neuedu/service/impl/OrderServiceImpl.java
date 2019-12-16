@@ -1,18 +1,6 @@
 package com.neuedu.service.impl;
 
-import com.alipay.api.AlipayResponse;
-import com.alipay.api.response.AlipayTradePrecreateResponse;
-import com.alipay.demo.trade.config.Configs;
-import com.alipay.demo.trade.model.ExtendParams;
-import com.alipay.demo.trade.model.GoodsDetail;
-import com.alipay.demo.trade.model.builder.AlipayTradePrecreateRequestBuilder;
-import com.alipay.demo.trade.model.result.AlipayF2FPrecreateResult;
-import com.alipay.demo.trade.service.AlipayMonitorService;
-import com.alipay.demo.trade.service.AlipayTradeService;
-import com.alipay.demo.trade.service.impl.AlipayMonitorServiceImpl;
-import com.alipay.demo.trade.service.impl.AlipayTradeServiceImpl;
-import com.alipay.demo.trade.service.impl.AlipayTradeWithHBServiceImpl;
-import com.alipay.demo.trade.utils.ZxingUtils;
+
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -41,7 +29,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpSession;
+import java.beans.Transient;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -51,6 +42,8 @@ public class OrderServiceImpl implements IOrderService {
 
     @Autowired
     ICartService cartService;
+    @Autowired
+    private WebSocket webSocket;
     @Autowired
     IProductService productService;
     @Autowired
@@ -63,8 +56,12 @@ public class OrderServiceImpl implements IOrderService {
     OrderItemMapper orderItemMapper;
     @Value("${springboot.imageHost}")
     String imageHost;
+
+
+
     @Override
-    //创建订单
+    //创建订单,加事务(默认捕获的是运行时异常,也可以加自定义异常）
+    @Transactional(rollbackFor = {RuntimeException.class})
     public ServerResponse creatOrder(Integer userId, Integer shippingId) {
 
         //1 参数非空判断
@@ -78,7 +75,6 @@ public class OrderServiceImpl implements IOrderService {
         }
         //2 查看用户购物车中已选中的商品
         ServerResponse<List<Cart>> serverResponse = cartService.findCartByUserIdAndChecked(userId);
-
         List<Cart> cartList = serverResponse.getData();
         if(cartList == null || cartList.size()==0){
             return serverResponse.serverResponseByError(ResponseCode.ERROR,"购物车为空或者未选中");
@@ -122,10 +118,18 @@ public class OrderServiceImpl implements IOrderService {
         }
         Page page = PageHelper.startPage(pageNum,pageSize);
         List<Order> orderList = orderMapper.findAllOrderByUserId(userId);
+        List<OrderVO> orderVOList = Lists.newArrayList();
         if(orderList == null || orderList.size() <= 0){
             return ServerResponse.serverResponseBySuccess("订单为空");
         }
-        PageInfo pageInfo = new PageInfo(orderList);
+        for (Order order1 : orderList) {
+            Order order = orderMapper.findOrderByOrderNo(order1.getOrderNo());
+            List<OrderItem> orderItemList = orderItemMapper.findOrderItemByOrderNo(order1.getOrderNo());
+            Integer shippingId = order.getShippingId();
+            ServerResponse<OrderVO> response = assembleOrderVO(order, orderItemList, shippingId);
+            orderVOList.add(response.getData());
+        }
+        PageInfo pageInfo = new PageInfo(orderVOList);
         return ServerResponse.serverResponseBySuccess(pageInfo);
     }
 
@@ -170,6 +174,9 @@ public class OrderServiceImpl implements IOrderService {
             order1.setStatus(OrderStatusEum.ORDER_PAYED.getStatus());
             order1.setPaymentTime(DateUtils.strToDate(gmt_payment));
             int result = orderMapper.updateOrderStatusAndPaymentTimeByOrderNo(order1);
+            String text=SocketCodeEnum.FINISH_PAY.getCheck()+"";
+            System.out.println(text);
+            webSocket.sendOneMessage(order.getUserId()+"",text);
             if(result <= 0){
                 return "fail";
             }
@@ -245,7 +252,10 @@ public class OrderServiceImpl implements IOrderService {
         }
         Order order1 = new Order();
         order1.setStatus(OrderStatusEum.ORDER_CANCEL.getStatus());
-        System.out.println(OrderStatusEum.ORDER_CANCEL.getStatus());
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String s = simpleDateFormat.format(date);
+        order1.setCloseTime(DateUtils.strToDate(s));
         order1.setOrderNo(orderNo);
         int result = orderMapper.updateOrderStatusAndPaymentTimeByOrderNo(order1);
         if(result <= 0){
@@ -256,6 +266,8 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public ServerResponse<List<OrderVO>> selectOrderVOList(Integer pageNum, Integer pageSize) {
+        int count = orderMapper.getAllOrderCount();
+        Page page = PageHelper.startPage(pageNum,pageSize);
         List<Order> orders = orderMapper.selectAll();
         List<OrderVO> orderVOList = Lists.newArrayList();
         for (Order order1 : orders) {
@@ -265,7 +277,8 @@ public class OrderServiceImpl implements IOrderService {
             ServerResponse<OrderVO> response = assembleOrderVO(order, orderItemList, shippingId);
             orderVOList.add(response.getData());
         }
-        return ServerResponse.serverResponseBySuccess(orderVOList);
+        PageInfo pageInfo = new PageInfo(orderVOList);
+        return ServerResponse.serverResponseBySuccess(pageInfo,count);
     }
 
     @Override
@@ -286,6 +299,45 @@ public class OrderServiceImpl implements IOrderService {
         }
         return ServerResponse.serverResponseBySuccess("发货成功");
     }
+
+
+
+
+    @Override
+    public ServerResponse findOrderListByStatus(Integer status) {
+        List<Order> orders = orderMapper.findOrderBystatus(status);
+        List<OrderVO> orderVOList = Lists.newArrayList();
+        for (Order order1 : orders) {
+            Order order = orderMapper.findOrderByOrderNo(order1.getOrderNo());
+            List<OrderItem> orderItemList = orderItemMapper.findOrderItemByOrderNo(order1.getOrderNo());
+            Integer shippingId = order.getShippingId();
+            ServerResponse<OrderVO> response = assembleOrderVO(order, orderItemList, shippingId);
+            orderVOList.add(response.getData());
+        }
+        return ServerResponse.serverResponseBySuccess(orderVOList);
+    }
+
+    @Override
+    //确认收货&交易完成
+    public ServerResponse updateOrderStatusByOrderNo(Long orderNo) {
+        if(orderNo == null){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"必须传订单号");
+        }
+        Order order = new Order();
+        order.setOrderNo(orderNo);
+        order.setStatus(OrderStatusEum.ORDER_SUCCESS.getStatus());
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String s = simpleDateFormat.format(date);
+        order.setEndTime(DateUtils.strToDate(s));
+        order.setCloseTime(DateUtils.strToDate(s));
+        int result = orderMapper.updateOrderStatusAndPaymentTimeByOrderNo(order);
+        if(result <= 0){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"订单状态更新失败");
+        }
+        return ServerResponse.serverResponseBySuccess("确认收货成功");
+    }
+
 
 
     //扣库存
@@ -407,7 +459,11 @@ public class OrderServiceImpl implements IOrderService {
             orderVO.setShippingVo(shippingVO);
             orderVO.setReceiverName(shipping.getReceiverName());
         }
-
+        orderVO.setCreateTime(DateUtils.dateToStr(order.getCreateTime()));
+        orderVO.setPaymentTime(DateUtils.dateToStr(order.getPaymentTime()));
+        orderVO.setCloseTime(DateUtils.dateToStr(order.getCloseTime()));
+        orderVO.setSendTime(DateUtils.dateToStr(order.getSendTime()));
+        orderVO.setEndTime(DateUtils.dateToStr(order.getEndTime()));
         orderVO.setStatus(order.getStatus());
         OrderStatusEum orderStatusEnum= OrderStatusEum.codeOf(order.getStatus());
         if(orderStatusEnum!=null){

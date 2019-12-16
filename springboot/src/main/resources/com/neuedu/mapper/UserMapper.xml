@@ -85,7 +85,7 @@
   </select>
   <select id="findUserByUsernameAndPassword" parameterType="map" resultMap="BaseResultMap">
     select id, username, password, email, phone, question, answer, role, create_time,
-    update_time, ip
+    update_time,ip
     from neuedu_user
     where username = #{username} and password = #{password}
   </select>

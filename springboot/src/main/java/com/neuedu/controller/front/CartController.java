@@ -7,6 +7,7 @@ import com.neuedu.pojo.User;
 import com.neuedu.service.ICartService;
 import com.neuedu.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping(value = "/cart")
+@CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
 public class CartController {
 
     @Autowired
@@ -40,6 +42,7 @@ public class CartController {
      * @param session
      * @return
      */
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     @RequestMapping("/list.do")
     public ServerResponse list(HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
@@ -65,18 +68,19 @@ public class CartController {
     }
 
     /**
-     * 购物车选中某个商品
+     * 更新商品选中状态
      * @param productId
      * @param session
      * @return
      */
-    @RequestMapping("/select/{productId}")
-    public ServerResponse select(@PathVariable("productId") Integer productId,HttpSession session){
+    @RequestMapping("/updateCheckStatus/{productId}/{status}")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
+    public ServerResponse updateCheckStatus(@PathVariable("productId") Integer productId,@PathVariable("status")Integer status,HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if(user == null){
             return ServerResponse.serverResponseByError(ResponseCode.NOT_LOGIN,"未登录");
         }
-        return cartService.selectCartVOByProductId(productId,user.getId());
+        return cartService.updateCheckStatus(productId,status,user.getId());
     }
 
 

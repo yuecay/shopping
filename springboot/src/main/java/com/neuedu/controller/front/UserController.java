@@ -7,6 +7,7 @@ import com.neuedu.pojo.User;
 import com.neuedu.service.IUserService;
 import com.neuedu.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,13 +23,16 @@ public class UserController {
      */
     @Autowired
     IUserService userService;
+
     @RequestMapping(value = "/register")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse register(User user){
         return  userService.register(user);
     }
     /**
      * 登录接口
      */
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     @RequestMapping(value = "/login/{username}/{password}")
     public ServerResponse login(@PathVariable("username") String username,
                                 @PathVariable("password")String password,
@@ -61,6 +65,7 @@ public class UserController {
      * 修改密码
      */
     @RequestMapping(value = "/forget_reset_password.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse forget_reset_password(String username,String passwordnew,String forgettoken){
         return userService.forget_reset_password(username, passwordnew, forgettoken);
     }
@@ -68,6 +73,7 @@ public class UserController {
      * 登录状态重置密码
      */
     @RequestMapping(value = "/reset_password.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse reset_password(String username,String password,String passwordnew){
         return userService.reset_password(username,password,passwordnew);
     }
@@ -90,6 +96,7 @@ public class UserController {
      * 获取当前登录用户的详细信息
      */
     @RequestMapping("/get_information.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse get_information(HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if(user == null){
@@ -101,6 +108,7 @@ public class UserController {
      * 退出登录
      */
     @RequestMapping("/loginout.do")
+    @CrossOrigin(origins="http://localhost:8081",allowCredentials = "true")
     public ServerResponse loginout(HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if(user == null){

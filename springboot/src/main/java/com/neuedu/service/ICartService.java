@@ -3,6 +3,7 @@ package com.neuedu.service;
 import com.google.common.collect.Lists;
 import com.neuedu.common.ServerResponse;
 import com.neuedu.pojo.Cart;
+import com.neuedu.vo.CartVO;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -29,9 +30,11 @@ public interface ICartService {
      */
     ServerResponse deleteBatch(List<Cart> cartList);
 
-    ServerResponse<List<Cart>> findCartByUserId(Integer id);
+    ServerResponse<CartVO> findCartByUserId(Integer id);
 
     ServerResponse deleteOne(Integer productId,Integer userId);
 
     ServerResponse selectCartVOByProductId(Integer productId,Integer userId);
+
+    ServerResponse updateCheckStatus(Integer productId, Integer status, Integer id);
 }

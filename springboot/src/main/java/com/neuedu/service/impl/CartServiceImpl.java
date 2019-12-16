@@ -15,6 +15,7 @@ import com.neuedu.vo.CartVO;
 import com.neuedu.vo.ProductDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -50,7 +51,7 @@ public class CartServiceImpl implements ICartService {
         //3 判断商品是否在购物车，是：更新；否：添加
         Cart cart = cartMapper.findCartByUserIdAndProductId(userId, productId);
         if(cart == null){
-            Cart newCart = new Cart(userId,productId,count, CheckEnum.CART_PRODUCT_CHECK.getCheck());
+            Cart newCart = new Cart(userId,productId,count, CheckEnum.CART_PRODUCT_UNCHECK.getCheck());
             int result = cartMapper.insert(newCart);
             if(result <= 0){
                 return ServerResponse.serverResponseByError(ResponseCode.ERROR,"添加购物车失败");
@@ -91,15 +92,17 @@ public class CartServiceImpl implements ICartService {
     }
 
     @Override
-    public ServerResponse<List<Cart>> findCartByUserId(Integer id) {
+    public ServerResponse<CartVO> findCartByUserId(Integer id) {
         if(id == null){
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"用户id必须传");
         }
-        List<Cart> cartList = cartMapper.findCartsByUserId(id);
-        if(cartList == null || cartList.size() <= 0){
+        //4 封装购物车对象CartVO
+        CartVO cartVO = getCartVO(id);
+
+        if(cartVO == null ){
             return ServerResponse.serverResponseBySuccess("购物车为空！");
         }
-        return ServerResponse.serverResponseBySuccess(cartList);
+        return ServerResponse.serverResponseBySuccess(cartVO);
     }
 
     @Override
@@ -125,6 +128,24 @@ public class CartServiceImpl implements ICartService {
             return ServerResponse.serverResponseByError(ResponseCode.ERROR,"查询出错");
         }
         return ServerResponse.serverResponseBySuccess(cartVO);
+    }
+
+    @Override
+    @Transactional
+    public ServerResponse updateCheckStatus(Integer productId, Integer status, Integer userId) {
+        if(productId == null){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"商品id必须传");
+        }
+        if(status == null){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"选中状态未知");
+        }
+        Cart cart = cartMapper.findCartByUserIdAndProductId(userId, productId);
+        cart.setChecked(status);
+        int result = cartMapper.updateByPrimaryKey(cart);
+        if(result <= 0){
+            return ServerResponse.serverResponseByError(ResponseCode.ERROR,"更新购物车选中状态出错");
+        }
+        return ServerResponse.serverResponseBySuccess();
     }
 
     private CartVO getOneCartVO(Integer productId,Integer userId){
