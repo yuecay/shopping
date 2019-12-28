@@ -35,11 +35,11 @@
             <property name="enableSubPackages" value="false" />
         </javaClientGenerator>
 
-        <table  tableName="neuedu_user" domainObjectName="User" enableCountByExample="false" enableDeleteByExample="false"
+        <table  tableName="product_kill" domainObjectName="ProductKill" enableCountByExample="false" enableDeleteByExample="false"
                 enableSelectByExample="false" enableUpdateByExample="false"/>
-        <table  tableName="neuedu_shipping" domainObjectName="Shipping" enableCountByExample="false" enableDeleteByExample="false"
+        <table  tableName="product_kill_order" domainObjectName="ProductKillOrder" enableCountByExample="false" enableDeleteByExample="false"
                 enableSelectByExample="false" enableUpdateByExample="false"/>
-        <table  tableName="neuedu_product" domainObjectName="Product" enableCountByExample="false" enableDeleteByExample="false"
+        <!--<table  tableName="neuedu_product" domainObjectName="Product" enableCountByExample="false" enableDeleteByExample="false"
                 enableSelectByExample="false" enableUpdateByExample="false"/>
         <table  tableName="neuedu_payinfo" domainObjectName="PayInfo" enableCountByExample="false" enableDeleteByExample="false"
                 enableSelectByExample="false" enableUpdateByExample="false"/>
@@ -51,5 +51,6 @@
                 enableSelectByExample="false" enableUpdateByExample="false"/>
         <table  tableName="neuedu_cart" domainObjectName="Cart" enableCountByExample="false" enableDeleteByExample="false"
                 enableSelectByExample="false" enableUpdateByExample="false"/>
+    -->
     </context>
 </generatorConfiguration>

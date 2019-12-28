@@ -39,4 +39,6 @@ public interface IProductService {
         ServerResponse<List<ProductDetailVO>> findProductListByCategory(Integer categoryId,Integer pageNum, Integer pageSize);
 
         ServerResponse findProductDown(String productName, Integer productId, Integer pageNum, Integer pageSize);
+
+        List<ProductDetailVO> findAllProduct();
 }

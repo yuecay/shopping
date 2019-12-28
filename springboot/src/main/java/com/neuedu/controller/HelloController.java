@@ -3,15 +3,24 @@ package com.neuedu.controller;
 
 import com.neuedu.common.WebSocket;
 import com.neuedu.utils.RedisApi;
+import com.neuedu.vo.ProductDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
-@RestController
+@Controller
 public class HelloController {
 
     @Autowired
@@ -46,4 +55,15 @@ public class HelloController {
         webSocket.sendOneMessage(userName,text);
         return text;
     }
+
+    @RequestMapping("/ExcelDownload")
+    public void excelDownload(HttpServletResponse response) throws IOException {
+
+        System.out.println("开始");
+
+    }
+
+
+
+
 }

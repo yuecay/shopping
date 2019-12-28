@@ -245,6 +245,17 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.serverResponseBySuccess(pageInfo,count);
     }
 
+    @Override
+    public List<ProductDetailVO> findAllProduct() {
+        List<Product> products = productMapper.selectAll();
+        List<ProductDetailVO> productDetailVOS = Lists.newArrayList();
+        for (int i = 0; i < products.size(); i++) {
+            ProductDetailVO productDetailVO = assembleProductDetailVO(products.get(i));
+            productDetailVOS.add(productDetailVO);
+        }
+        return productDetailVOS;
+    }
+
 
     //productList转ProductListVO
     private ProductListVO assembleProductListVO(Product product){

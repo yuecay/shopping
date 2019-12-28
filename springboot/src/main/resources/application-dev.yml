@@ -9,9 +9,9 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       driver-class-name: com.mysql.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/shopping?characterEncoding=utf8
+      url: jdbc:mysql://121.36.13.233:3306/shopping?characterEncoding=utf8
       username: root
-      password: root
+      password: "@quwosulileiTMD521"
       max-active: 20
       max-wait: 6000
       min-idle: 1
@@ -49,3 +49,4 @@ redis:
   port: 5379
   password: Hyc5670526
   timeout: 2000
+  host : redis://101.37.78.184:5379
